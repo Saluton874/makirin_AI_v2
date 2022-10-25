@@ -145,10 +145,10 @@ class Plutchik:
 			# ポイントの変動
 			return point if now_point < 0 else -point
 		
-		# 10秒経過ごとに値を0に近づける
+		# 120秒経過ごとに値を0に近づける
 		keika = time.perf_counter() - timer
-		if keika > 10:
-			point = round(keika / 10) # 経過回数
+		if keika > 120:
+			point = round(keika / 120) # 経過回数
 			self.plut['心']['安らぎ'] += timer_point(self.plut['心']['安らぎ'], point)
 			self.plut['心']['容認'] += timer_point(self.plut['心']['容認'], point)
 			self.plut['心']['不安'] += timer_point(self.plut['心']['不安'], point)
