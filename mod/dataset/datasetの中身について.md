@@ -25,3 +25,7 @@ SQlite3のデータベースを格納しています。
 	- Symbol(全て全角)の、(全て全角)は削除しました
 
 使用モジュールは`mod/judge_kanjou.py`になります。このプログラムは[Pythonでちょっとだけ自然言語処理に挑戦](https://www.tdi.co.jp/miso/python-natural-language-processing)を改変したものです。
+
+## kinshi.csv
+
+[monoroch（モノロク）](http://monoroch.net)様の[放送禁止用語一覧](http://monoroch.net/kinshi/)ページよりダウンロードしたCSVファイルです。
