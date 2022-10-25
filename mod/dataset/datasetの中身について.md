@@ -10,7 +10,7 @@ SQlite3のデータベースを格納しています。
 
 [単語感情極性対応表](http://www.lr.pi.titech.ac.jp/%7Etakamura/pndic_ja.html)様の日本語版をデータベース化したデータです。
 
-使用モジュールは`mod/judge_negaposi.py`になります。
+使用モジュールは[`mod/judge_negaposi.py`](mod/judge_negaposi.py)になります。
 
 ### 単語分類表
 
@@ -37,6 +37,6 @@ SQlite3のデータベースを格納しています。
 ## w2v_modelフォルダ
 
 Wikipedia全文から作成した、`wiki.kv`と`wiki.kv.vectors.npy`というWord2Vecのモデルデータが入っています。
-2022年10月現在、[ここ](meitaso.net/assets/dataset/w2v_model.zip)からZIPファイルのダウンロードが可能です。
+2022年10月現在、[ここ](https://meitaso.net/assets/dataset/w2v_model.zip)からZIPファイルのダウンロードが可能です。
 
 使用モジュールは`mod/text_comparison.py`になります。
