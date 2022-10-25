@@ -4,14 +4,12 @@
 
 ''' なんちゃってソレ探し '''
 
-import G
-import re, MeCab, CaboCha
+import G, re, MeCab, CaboCha
 from text_normalize import normalize as nor
 from judge_category import cat_and_point
 
 owakati = MeCab.Tagger(G.neologd+'-Owakati')
-bunpou = MeCab.Tagger(G.neologd+'-F,%f[1] , -U,%m , -E,')
-bunpou2 = MeCab.Tagger(G.neologd+'-F,%f[0]%f[1]%f[2], -U,%m , -E,')
+bunpou = MeCab.Tagger(G.neologd+'-F,%f[0]%f[1]%f[2], -U,%m , -E,')
 c = CaboCha.Parser(G.neologd)
 
 def eq(self, a, b):
@@ -42,7 +40,7 @@ def check_sore(p_text1, p_text2):
 	for chunk in chunks:
 		if chunk['to'] >= 0:
 			temp1 = owakati.parse(chunk['c']).split()
-			temp2 = bunpou.parse(chunk['c']).split(',')
+			temp2 = MeCab.Tagger(G.neologd+'-F,%f[1] , -U,%m , -E,').parse(chunk['c']).split(',')
 			for _ in zip(temp1,temp2[1:-1]):
 				sentence |= {chunk['c']:chunks[chunk['to']]['c']}	
 
@@ -55,8 +53,8 @@ def check_sore(p_text1, p_text2):
 
 	for v in sentence.keys():
 		temp1 = owakati.parse(v).split()
-		temp2 = bunpou2.parse(v).split(',')
-		jyogai= owakati.parse(p_text2).split() # 自身の発言には「それ」がないと仮定
+		temp2 = bunpou.parse(v).split(',')
+		jyogai= owakati.parse(p_text2).split() # 自身の発言には「それ」がないはず
 		for i, _ in enumerate(temp1):
 			# 「これ、ここ、こちら」は自分で提示しているので無変換
 			# 「どれ、どこ、どちら」は相手が提示しているので無変換
