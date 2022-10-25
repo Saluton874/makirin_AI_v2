@@ -10,13 +10,13 @@ SQlite3のデータベースを格納しています。
 
 [単語感情極性対応表](http://www.lr.pi.titech.ac.jp/%7Etakamura/pndic_ja.html)様の日本語版をデータベース化したデータです。
 
-使用モジュールは[`mod/judge_negaposi.py`](../../mod/judge_negaposi.py)になります。
+使用モジュールは[`mod/judge_negaposi.py`](../judge_negaposi.py)になります。
 
 ### 単語分類表
 
 どこで入手したか忘れてしまいました……。
 
-使用モジュールは`mod/judge_category.py`になります。
+使用モジュールは[`mod/judge_category.py`](../judge_category.py)になります。
 
 ## D18-2018.7.24フォルダ
 
@@ -26,17 +26,17 @@ SQlite3のデータベースを格納しています。
 1. XLSXファイルの「感情分類」シートを`PositiveNegativeSymbol.csv`として書き出し、`D18-2018.7.24`フォルダへ入れます
 	- Symbol(全て全角)の、(全て全角)は削除しました
 
-使用モジュールは`mod/judge_kanjou.py`になります。
+使用モジュールは[`mod/judge_kanjou.py`](../judge_kanjou.py)になります。
 
 ## kinshi.csv
 
 [monoroch（モノロク）](http://monoroch.net)様の[放送禁止用語一覧](http://monoroch.net/kinshi/)ページよりダウンロードしたCSVファイルです。
 
-使用モジュールは`mod/think_kinshi.py`になります。
+使用モジュールは[`mod/think_kinshi.py`](../think_kinshi.py)になります。
 
 ## w2v_modelフォルダ
 
 Wikipedia全文から作成した、`wiki.kv`と`wiki.kv.vectors.npy`というWord2Vecのモデルデータが入っています。
 2022年10月現在、[ここ](https://meitaso.net/assets/dataset/w2v_model.zip)からZIPファイルのダウンロードが可能です。
 
-使用モジュールは`mod/text_comparison.py`になります。
+使用モジュールは[`mod/text_comparison.py`](../text_comparison.py)になります。
