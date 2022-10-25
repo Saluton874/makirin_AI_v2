@@ -40,3 +40,9 @@ Wikipedia全文から作成した、`wiki.kv`と`wiki.kv.vectors.npy`というWo
 2022年10月現在、[ここ](https://meitaso.net/assets/dataset/w2v_model.zip)からZIPファイルのダウンロードが可能です。
 
 使用モジュールは[`mod/text_comparison.py`](../text_comparison.py)になります。
+
+## 暴言.txt
+
+暴言っぽい正規表現。基本的な暴言のみ。
+
+使用モジュールは[`mod/judge_bougen.py`](../judge_bougen.py)になります。
