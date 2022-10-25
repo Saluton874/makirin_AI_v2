@@ -29,3 +29,4 @@ SQlite3のデータベースを格納しています。
 ## kinshi.csv
 
 [monoroch（モノロク）](http://monoroch.net)様の[放送禁止用語一覧](http://monoroch.net/kinshi/)ページよりダウンロードしたCSVファイルです。
+使用モジュールは`mod/think_kinshi.py`になります。
