@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
 # http://ai-coordinator.jp/slackbot
 # https://swdrsker.hatenablog.com/entry/2017/02/23/193137
 # https://qiita.com/To_Murakami/items/cc225e7c9cd9c0ab641e
