@@ -62,11 +62,26 @@ class Changer():
 				# わからないのはスルー
 				else:
 					pass
-			
+
+			'''
+			来る（カ変）の対策
+			'''
+			if re.search(r'カ変',m_b[3]) or re.search(r'来る',m_b[5]):
+				if re.search(r'サ変',m[3]) or m[5] in ['さし'] or m[5] in ['ら']:
+					self.sentence[i-1] = '来'
+			'''
+			TODO: カ変について学んでから出直す
+			'''
+
+
+					
+
+
 			'''
 			せるの修正
 			'''
 			if '動詞' in m:
+				# 未然に未然形へ変更しておく
 				if self.sentence[i] in ['せ','せる','せれ','せろ','せよ','させ','させる','させれ','させろ','させよ']:
 					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
 						try:
@@ -149,8 +164,15 @@ class Changer():
 					else:
 						try:
 							self.sentence[i-1] = c.get(self.sentence[i-1])['連用形'][0][:-1] # 連用形にする
+							if self.sentence[i-1] in ['せり']:
+								self.sentence[i-1] = 'せ'
 						except:
 							pass
+					try:
+						if self.sentence[i-1] in ['さし']:
+							self.sentence[i-1] = 'させ'
+					except:
+						pass
 
 		return self.sentence
 
