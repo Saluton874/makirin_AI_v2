@@ -25,11 +25,17 @@ class Changer():
 	
 	def __init__(self):
 		self.sentence = []
+		self.sentence_type = '不明' # どういう意図があるか
 
 	def standard(self, text):
 		'''
-		なんかおかしい日本語を簡易的に標準化
+		なんかおかしい日本語を簡易的に修正
+		修正も兼ねているので2回通す（完成したらチェックと修正を分けても良い）
 		'''
+		
+		text = text if not len(self.sentence) else ''.join(self.sentence)
+		self.sentence = []
+		
 		temp1 = owakati.parse(text).split()
 		temp2 = bunpou.parse(text).split(',') #['', '感動詞|||こんにちは', '名詞|固有名詞|一般|ご機嫌いかが', '']
 		sets = list(zip(temp1,temp2[1:-1]))
@@ -48,11 +54,11 @@ class Changer():
 			格助詞の修正
 			'''
 			if '格助詞' in m:
+				# TODO:にがおかしい
 				try:
 					hepburn = pykakasi.kakasi().convert(sets[i+1][1].split('|')[3])[-1]['hepburn']
 				except:
 					hepburn = ''
-				print(hepburn)
 				# ざっくり他動詞
 				if re.search('asu|yasu|osu|eru|seru|su', hepburn):
 					self.sentence[i] = 'が'
@@ -66,20 +72,21 @@ class Changer():
 			'''
 			来る（カ変）の対策
 			'''
-			if re.search(r'カ変',m_b[3]) or re.search(r'来ら|来る|来れる|来意',m_b[5]):
-				if re.search(r'サ変|ナイ',m[3]) or m[5] in ['さし'] or m[5] in ['ら'] or '助動詞' in m and not '不変化型' in m[3]:
-					self.sentence[i-1] = '来' #未然形・連用形
-				if self.sentence[i] in ['ら']:
-					self.sentence[i] = ''
-				if re.search(r'一段',m[3]):
-					self.sentence[i-1] = '来さ'
-					
+			if '助動詞' in m:
+				if re.search(r'カ変',m_b[3]) or re.search(r'来ら|来る|来れる|来意',m_b[5]):
+					if re.search(r'サ変|ナイ',m[3]) or m[5] in ['さし'] or m[5] in ['ら'] or '助動詞' in m and not '不変化型' in m[3]:
+						self.sentence[i-1] = '来' #未然形・連用形
+					if self.sentence[i] in ['ら']:
+						self.sentence[i] = ''
+					if re.search(r'一段',m[3]):
+						self.sentence[i-1] = '来さ'
+
 
 			'''
 			せるの修正
 			'''
 			if '動詞' in m:
-				# 未然に未然形へ変更しておく
+				# 事前に未然形へ変更しておく
 				if self.sentence[i] in ['せ','せる','せれ','せろ','せよ','させ','させる','させれ','させろ','させよ']:
 					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
 						try:
@@ -91,6 +98,7 @@ class Changer():
 					if m_b[0] in ['動詞'] and re.search(r'未然',m_b[4]):
 						if re.search(r'五段|サ変',m_b[3]):
 							print('「せる」OK')
+							self.sentence_type = '使役'
 						else:
 							# させる化させてみる
 							if self.sentence[i] in ['せ']: self.sentence[i] = 'させ'
@@ -104,12 +112,13 @@ class Changer():
 				if self.sentence[i] in ['させ','させる','させれ','させろ','させよ']:
 					if m_b[3] in ['一段'] or re.search(r'来|こ',m_b[0]):
 						print('「させる」OK')
+						self.sentence_type = '使役'
 
 			'''
 			れるの修正
 			'''
 			if '動詞' in m:
-				# 未然に未然形へ変更しておく
+				# 事前に未然形へ変更しておく
 				if self.sentence[i] in ['れ','れる','れれ','れろ','れよ','られ','られる','られれ','られろ','られよ']:
 					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
 						try:
@@ -121,6 +130,7 @@ class Changer():
 					if m_b[0] in ['動詞'] and re.search(r'未然',m_b[4]):
 						if re.search(r'五段|サ変',m_b[3]):
 							print('「れる」OK')
+							self.sentence_type = '自発・尊敬'
 						else:
 							# られる化させてみる
 							if self.sentence[i] in ['れ']: self.sentence[i] = 'られ'
@@ -136,29 +146,36 @@ class Changer():
 						self.sentence[i] = 'させ'+self.sentence[i]
 					if m_b[3] in ['一段'] or re.search(r'来|こ',m_b[0]):
 						print('「られる」OK')
+						self.sentence_type = '受け身・可能'
 
 			'''
 			ないの修正
 			'''
-			if '動詞' in m_b: # 「ない」は形容詞型と特殊型があるので、手前が動詞であることを条件とする
-				# 未然に未然形へ変更しておく
+			if m_b[0] in ['動詞','助動詞']: # 動詞と助動詞「ませ」の後に付く
+				# 事前に未然形へ変更しておく
 				if self.sentence[i] in ['なかろ','なかっ','なく','ない','なけれ','ず','ぬ','ん','ね']:
 					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
 						try:
 							self.sentence[i-1] = c.get(self.sentence[i-1])['未然形'][0][:-2]
 						except:
 							pass
+				# ないチェック
+				if '特殊・ナイ' in m and '未然形' in m_b[4]:
+					print('ないOK')
+					self.sentence_type = '否定'
 				# ぬんチェック
 				if self.sentence[i] in ['ぬ','ん']:
+					if self.sentence[i-1] in ['ます','まし','ますれ','ましょ']:
+						self.sentence[i-1] = 'ませ'
 					self.sentence[i] = 'ん'
-					if not 'ませ' in m_b:
-						self.sentence[i] = 'ません'
+					print('ぬんOK')
+					self.sentence_type = '否定'
 
 			'''
 			う・ようの修正
 			'''
-			if '不変化型' in m or '助動詞語幹' in m: # (よ)うは存在しないっぽい？
-				# 未然に未然形へ変更しておく
+			if '不変化型' in m and not m[5] in ['ぬ','ん'] or '助動詞語幹' in m: # ようは助動詞語幹らしい
+				# 事前に未然形へ変更しておく
 				if self.sentence[i] in ['う']:
 					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
 						try:
@@ -179,9 +196,11 @@ class Changer():
 						except:
 							pass
 					print('ようOK')
+					self.sentence_type = '意志'
 				else:
 					if re.search(r'五段',m_b[3]) or re.search(r'形容動詞',m_b[1]):
 						print('うOK')
+						self.sentence_type = '推量'
 				
 				if m_b[0] in ['助動詞']:
 					if self.sentence[i-1] in ['ない','なかっ','なく','なけれ']:
@@ -201,19 +220,90 @@ class Changer():
 					if self.sentence[i-1] in ['です','でし']:
 						self.sentence[i-1] = 'でしょ'
 				if m[5] == 'よう':
+					if self.sentence[i-1] in ['せる','せれ','せろ','せよ']:
+						self.sentence[i-1] = 'せ'
+					if self.sentence[i-1] in ['させる','させれ','させろ','させよ']:
+						self.sentence[i-1] = 'させ'
+					if self.sentence[i-1] in ['れる','れれ','れろ','れよ']:
+						self.sentence[i-1] = 'れ'
+					if self.sentence[i-1] in ['られる','られれ','られろ','られよ']:
+						self.sentence[i-1] = 'られ'
+
+			'''
+			まいの修正は飛ばす
+			'''
+
+			'''
+			たい・たがるの修正
+			'''
+			if m[3] in ['特殊・タイ']:
+				# 事前に連用形へ変更しておく
+				if m_b[0] in ['動詞'] and not re.search(r'連用',m_b[4]):
+					try:
+						self.sentence[i-1] = c.get(self.sentence[i-1])['連用形'][0][:-1]
+					except:
+						pass
+				if '動詞' in m_b:
 					if self.sentence[i-1] in ['せる','せ','せれ','せろ','せよ']:
 						self.sentence[i-1] = 'せ'
-					if self.sentence[i-1] in ['させる','させ','させれ','させろ','させよ']:
-						self.sentence[i-1] = 'させ'
-					if self.sentence[i-1] in ['れる','れ','れれ','れろ','れよ']:
-						self.sentence[i-1] = 'れ'
-					if self.sentence[i-1] in ['られる','られ','られれ','られろ','られよ']:
-						self.sentence[i-1] = 'られ'
+					print('たいOK')
+					self.sentence_type = '希望'
+			
+			'''
+			た・だの修正
+			幅広すぎてカバーできそうもない
+			'''
+			if m[3] in ['特殊・タ','特殊・ダ']:
+				# 事前に連用形へ変更しておく
+				if m_b[0] in ['動詞'] and not re.search(r'連用',m_b[4]):
+					try:
+						self.sentence[i-1] = c.get(self.sentence[i-1])['連用形'][0][:-1]
+					except:
+						pass
+				if m_b[0] in ['動詞'] or m_b[4] in ['連用タ接続'] or \
+					not self.sentence[i-1] in ['ぬ','ん','う','まい']:
+					if m_b[0] in ['助動詞'] or m_b[0] in ['動詞']:
+						if self.sentence[i-1] in ['せる','せり','せれ','せろ','せよ']:
+							self.sentence[i-1] = 'せ'
+						if self.sentence[i-1] in ['させる','さし','させれ','させろ','させよ']:
+							self.sentence[i-1] = 'させ'
+						if self.sentence[i-1] in ['れる','れれ','れろ','れよ']:
+							self.sentence[i-1] = 'れ'
+						if self.sentence[i-1] in ['られる','られれ','られろ','られよ']:
+							self.sentence[i-1] = 'られ'
+						if self.sentence[i-1] in ['ない','なかろ','なく','なけれ']:
+							self.sentence[i-1] = 'なかっ'
+						if self.sentence[i-1] in ['ぬ','ん','ず','ね']:
+							self.sentence[i-1] = 'ず'
+						if self.sentence[i-1] in ['たい','たかろ','たく','たけれ']:
+							self.sentence[i-1] = 'たかっ'
+						if self.sentence[i-1] in ['たがる','たがら','たがり','たがれ']:
+							self.sentence[i-1] = 'たがっ'
+						if self.sentence[i-1] in ['そうだ','そうだろ','そうで','そうに','そうな','そうなら']:
+							self.sentence[i-1] = 'そうだっ'
+						if self.sentence[i-1] in ['ようだ','ようだろ','ようで','ように','ような','ようなら']:
+							self.sentence[i-1] = 'ようだっ'
+						if self.sentence[i-1] in ['らしい','らしく','らしけれ']:
+							self.sentence[i-1] = 'らしかっ'
+						if self.sentence[i-1] in ['ます','ませ','ましょ','ますれ','ませまし']:
+							self.sentence[i-1] = 'まし'
+						if self.sentence[i-1] in ['だ','だろ','で','な','なら']:
+							self.sentence[i-1] = 'だっ'
+						if self.sentence[i-1] in ['です','でしょ']:
+							self.sentence[i-1] = 'でし'
+					if m_b[3] in ['五段・ガ行','五段・ナ行','五段・バ行','五段・マ行']:
+						if m_b[3] in ['五段・ガ行']
+							self.sentence[i-1] = self.sentence[i-1][:-1]+'い'
+						else:
+							self.sentence[i-1] = self.sentence[i-1][:-1]+'ん'
+						self.sentence[i] = 'だ'
+					print('たOK')
+					self.sentence_type = '過去・完了'
 
 			'''
 			です・ますの修正
 			'''
-			if '助動詞' in m:
+			if m[3] in ['特殊・デス','特殊・マス']:
 				# ですチェック
 				if self.sentence[i] in ['でしょ','でし','です']:
 					if m_b[1] in ['形容動詞語幹'] or \
@@ -224,6 +314,7 @@ class Changer():
 						self.sentence[i] in ['でしょ'] and m_b[0] in ['形容詞']:
 							if self.sentence[i] in ['でしょ']: self.sentence[i-1] = m_b[5]
 							print('「です」OK')
+							self.sentence_type = '断定'
 					else:
 						# ます化させてみる
 						if self.sentence[i] in ['でしょ']: self.sentence[i] = 'ましょ'
@@ -234,6 +325,7 @@ class Changer():
 				if self.sentence[i] in ['ませ','ましょ','まし','ます','ますれ']:
 					if m_b[3] in ['連用形']:
 						print('「ます」OK')
+						self.sentence_type = '丁寧'
 					else:
 						try:
 							self.sentence[i-1] = c.get(self.sentence[i-1])['連用形'][0][:-1] # 連用形にする
@@ -252,3 +344,4 @@ class Changer():
 if __name__ == '__main__':
 	changer = Changer()
 	print(changer.standard(input('入力：')))
+	print(changer.standard(''))
