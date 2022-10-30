@@ -292,7 +292,7 @@ class Changer():
 						if self.sentence[i-1] in ['です','でしょ']:
 							self.sentence[i-1] = 'でし'
 					if m_b[3] in ['五段・ガ行','五段・ナ行','五段・バ行','五段・マ行']:
-						if m_b[3] in ['五段・ガ行']
+						if m_b[3] in ['五段・ガ行']:
 							self.sentence[i-1] = self.sentence[i-1][:-1]+'い'
 						else:
 							self.sentence[i-1] = self.sentence[i-1][:-1]+'ん'
