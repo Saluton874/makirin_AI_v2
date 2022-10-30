@@ -66,16 +66,14 @@ class Changer():
 			'''
 			来る（カ変）の対策
 			'''
-			if re.search(r'カ変',m_b[3]) or re.search(r'来る',m_b[5]):
-				if re.search(r'サ変',m[3]) or m[5] in ['さし'] or m[5] in ['ら']:
-					self.sentence[i-1] = '来'
-			'''
-			TODO: カ変について学んでから出直す
-			'''
-
-
+			if re.search(r'カ変',m_b[3]) or re.search(r'来ら|来る|来れる|来意',m_b[5]):
+				if re.search(r'サ変|ナイ',m[3]) or m[5] in ['さし'] or m[5] in ['ら'] or '助動詞' in m and not '不変化型' in m[3]:
+					self.sentence[i-1] = '来' #未然形・連用形
+				if self.sentence[i] in ['ら']:
+					self.sentence[i] = ''
+				if re.search(r'一段',m[3]):
+					self.sentence[i-1] = '来さ'
 					
-
 
 			'''
 			せるの修正
@@ -111,6 +109,7 @@ class Changer():
 			れるの修正
 			'''
 			if '動詞' in m:
+				# 未然に未然形へ変更しておく
 				if self.sentence[i] in ['れ','れる','れれ','れろ','れよ','られ','られる','られれ','られろ','られよ']:
 					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
 						try:
@@ -139,6 +138,79 @@ class Changer():
 						print('「られる」OK')
 
 			'''
+			ないの修正
+			'''
+			if '動詞' in m_b: # 「ない」は形容詞型と特殊型があるので、手前が動詞であることを条件とする
+				# 未然に未然形へ変更しておく
+				if self.sentence[i] in ['なかろ','なかっ','なく','ない','なけれ','ず','ぬ','ん','ね']:
+					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
+						try:
+							self.sentence[i-1] = c.get(self.sentence[i-1])['未然形'][0][:-2]
+						except:
+							pass
+				# ぬんチェック
+				if self.sentence[i] in ['ぬ','ん']:
+					self.sentence[i] = 'ん'
+					if not 'ませ' in m_b:
+						self.sentence[i] = 'ません'
+
+			'''
+			う・ようの修正
+			'''
+			if '不変化型' in m or '助動詞語幹' in m: # (よ)うは存在しないっぽい？
+				# 未然に未然形へ変更しておく
+				if self.sentence[i] in ['う']:
+					if m_b[0] in ['動詞'] and not re.search(r'未然',m_b[4]):
+						try:
+							self.sentence[i-1] = c.get(self.sentence[i-1])['未然形'][0][:-2]
+						except:
+							pass
+					if m_b[0] in ['形容詞'] and not re.search(r'未然',m_b[4]):
+						try:
+							self.sentence[i-1] = c.get(self.sentence[i-1])['未然形'][1][:-1]
+						except:
+							pass
+				if m_b[4] in '未然ウ接続':
+					if self.sentence[i-1] in ['されよ','れよ']:
+						self.sentence[i-1] = 'れよ'
+						try:
+							if self.sentence[i-2] == 'さ':
+								self.sentence[i-1] = 'せよ'
+						except:
+							pass
+					print('ようOK')
+				else:
+					if re.search(r'五段',m_b[3]) or re.search(r'形容動詞',m_b[1]):
+						print('うOK')
+				
+				if m_b[0] in ['助動詞']:
+					if self.sentence[i-1] in ['ない','なかっ','なく','なけれ']:
+						self.sentence[i-1] = 'なかろ'
+					if self.sentence[i-1] in ['たい','たかっ','たく','たけれ']:
+						self.sentence[i-1] = 'たかろ'
+					if self.sentence[i-1] in ['だ','だっ','で','な','なら']:
+						self.sentence[i-1] = 'だろ'
+					if self.sentence[i-1] in ['た','たら','だら']:
+						self.sentence[i-1] = 'たろ'
+					if self.sentence[i-1] in ['ようだ','ようだっ','ようで','ように','ような','ようなら']:
+						self.sentence[i-1] = 'ようだろ'
+					if self.sentence[i-1] in ['そうだ','そうだっ','そうで','そうに','そうな','そうなら']:
+						self.sentence[i-1] = 'そうだろ'
+					if self.sentence[i-1] in ['ます','まし','ますれ','ませ']:
+						self.sentence[i-1] = 'ましょ'
+					if self.sentence[i-1] in ['です','でし']:
+						self.sentence[i-1] = 'でしょ'
+				if m[5] == 'よう':
+					if self.sentence[i-1] in ['せる','せ','せれ','せろ','せよ']:
+						self.sentence[i-1] = 'せ'
+					if self.sentence[i-1] in ['させる','させ','させれ','させろ','させよ']:
+						self.sentence[i-1] = 'させ'
+					if self.sentence[i-1] in ['れる','れ','れれ','れろ','れよ']:
+						self.sentence[i-1] = 'れ'
+					if self.sentence[i-1] in ['られる','られ','られれ','られろ','られよ']:
+						self.sentence[i-1] = 'られ'
+
+			'''
 			です・ますの修正
 			'''
 			if '助動詞' in m:
@@ -147,6 +219,7 @@ class Changer():
 					if m_b[1] in ['形容動詞語幹'] or \
 						m_b[0] in ['名詞'] and not m_b[1] in ['非自立'] or \
 						m_b[2] in ['助動詞語幹'] or \
+						self.sentence[i] in ['です'] and m_b[0] in ['形容詞'] or \
 						self.sentence[i] in ['でしょ'] and m_b[0] in ['動詞'] or \
 						self.sentence[i] in ['でしょ'] and m_b[0] in ['形容詞']:
 							if self.sentence[i] in ['でしょ']: self.sentence[i-1] = m_b[5]
