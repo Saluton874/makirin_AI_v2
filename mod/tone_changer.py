@@ -99,7 +99,6 @@ class Changer():
 						self.sentence[i-1] = '来さ'
 			'''
 
-
 			'''
 			せるの修正
 			'''
@@ -190,7 +189,7 @@ class Changer():
 					if m_b[0] in ['形容詞']:
 						self.sentence[i-1] = self.change_katsuyo(self.sentence[i-1], '形容詞未然形')
 
-				if m_b[4] in '未然ウ接続':
+				if m_b[4] in ['未然ウ接続']:
 					if self.sentence[i-1] in ['されよ','れよ']:
 						self.sentence[i-1] = 'れよ'
 						try:
@@ -233,8 +232,20 @@ class Changer():
 						self.sentence[i-1] = 'られ'
 
 			'''
-			まいの修正は飛ばす
+			まいの修正
+			使わない予定だけれど
 			'''
+			if m[0] in ['助動詞'] and self.sentence[i] == 'まい' and m_b[0] != '':
+				if m_b[0] in ['動詞'] and re.search(r'五段',m_b[3]) or m_b[5] == 'ます':
+					self.sentence[i-1] = m_b[5]
+					print('まいOK')
+					self.sentence_type = '否定'
+				elif m_b[0] in ['動詞'] or \
+					self.sentence[i-1] in ['せ','せる','せれ','せろ','せよ','させ','させる','させれ','させろ','させよ'] or \
+					self.sentence[i-1] in ['れ','れる','れれ','れろ','れよ','られ','られる','られれ','られろ','られよ']:
+					self.sentence[i-1] = self.change_katsuyo(self.sentence[i-1], '未然形')
+					print('まいOK')
+					self.sentence_type = '否定'
 
 			'''
 			たい・たがるの修正
@@ -305,14 +316,36 @@ class Changer():
 						else:
 							self.sentence[i-1] = self.sentence[i-1][:-1]+'ん'
 						self.sentence[i] = 'だ'
-					self.sentence[i] = 'た' if not ta_flag else 'だ'
+					if not '体言接続' in m:
+						self.sentence[i] = 'た' if not ta_flag else 'だ'
+						if m_b[0] in ['名詞']: self.sentence[i] = 'だ'
 					print('たOK')
 					self.sentence_type = '過去・完了'
 
 			'''
 			そうだ・ようだの修正
-			TODO:形態を一通り確認する必要がある
+			形態解析結果が特殊？で動作確認できていない
 			'''
+			if m[3] in ['特殊・ダ'] or self.sentence[i] in ['に','な']:
+				# そうだチェック
+				if m_b[1] in ['助詞類接続'] and self.sentence[i-1] == 'そう':
+					if m_b_b[0] in ['動詞']:
+						self.sentence[i-2] = self.change_katsuyo(self.sentence[i-2], '連用形') 
+					print('そうだOK')
+					self.sentence_type = '様態'
+				elif m_b[0] in ['動詞'] and self.sentence[i] in ['に','な']:
+					self.sentence[i] = 'そう' + self.sentence[i]
+				# ようだチェック
+				if m_b[1] in ['助詞類接続'] and self.sentence[i-1] == 'よう':
+					if m_b_b[0] in ['動詞','形容詞'] or \
+						re.search(r'形容動詞',m_b_b[1]) or \
+						m_b_b[0] in ['助詞'] and m_b_b[5] in ['の'] or \
+						m_b_b[0] in ['連体詞'] and m_b_b[5] in ['この','その','あの','どの'] or \
+						m_b_b[5] in ['せる','させる','れる','られる','ない','ぬ','ん','たい','たがる','た','だ']:
+						print('ようだOK')
+						self.sentence_type = '推定・たとえ'
+						if self.sentence[i] == 'に':
+							self.sentence_type = '例示'
 
 			'''
 			らしいの修正
@@ -350,22 +383,16 @@ class Changer():
 						if self.sentence[i] in ['です']: self.sentence[i] = 'ます'
 
 				# ますチェック
-				if self.sentence[i] in ['ませ','ましょ','まし','ます','ますれ']:
+				if self.sentence[i] in ['ませ','ましょ','まし','ます','ますれ'] m_b[0] != '':
 					if m_b[3] in ['連用形']:
 						print('「ます」OK')
 						self.sentence_type = '丁寧'
 					else:
-						try:
-							self.sentence[i-1] = self.change_katsuyo(self.sentence[i-1], '連用形')
-							if self.sentence[i-1] in ['せり']:
-								self.sentence[i-1] = 'せ'
-						except:
-							pass
-					try:
+						self.sentence[i-1] = self.change_katsuyo(self.sentence[i-1], '連用形')
+						if self.sentence[i-1] in ['せり']:
+							self.sentence[i-1] = 'せ'
 						if self.sentence[i-1] in ['さし']:
 							self.sentence[i-1] = 'させ'
-					except:
-						pass
 
 		return self.sentence
 
