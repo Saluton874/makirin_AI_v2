@@ -383,7 +383,7 @@ class Changer():
 						if self.sentence[i] in ['です']: self.sentence[i] = 'ます'
 
 				# ますチェック
-				if self.sentence[i] in ['ませ','ましょ','まし','ます','ますれ'] m_b[0] != '':
+				if self.sentence[i] in ['ませ','ましょ','まし','ます','ますれ'] and m_b[0] != '':
 					if m_b[3] in ['連用形']:
 						print('「ます」OK')
 						self.sentence_type = '丁寧'
