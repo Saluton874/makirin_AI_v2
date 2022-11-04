@@ -101,19 +101,12 @@ class Changer():
 				else:
 					pass
 			'''
+			
+
 			'''
-			来る（カ変）の対策
-			後から修正
-			'''
-			'''
-			if '助動詞' in m:
-				if re.search(r'カ変',m_b[3]) or re.search(r'来ら|来る|来れる|来意',m_b[5]):
-					if re.search(r'サ変|ナイ',m[3]) or m[5] in ['さし'] or m[5] in ['ら'] or '助動詞' in m and not '不変化型' in m[3]:
-						self.sentence[i-1] = '来' #未然形・連用形
-					if self.sentence[i] in ['ら']:
-						self.sentence[i] = ''
-					if re.search(r'一段',m[3]):
-						self.sentence[i-1] = '来さ'
+			------------------------------------------------
+			助動詞
+			------------------------------------------------
 			'''
 
 			'''
@@ -188,10 +181,14 @@ class Changer():
 			'''
 			ないの修正
 			'''
-			if m[1][0] in ['動詞','助動詞']: # 動詞と助動詞「ませ」の後に付く
+			if m[1][0] in ['動詞','助動詞','形容詞']: # 動詞と助動詞「ませ」の後に付く
+				m = self.reset_m()
 				if self.sentence[i] in ['なかろ','なかっ','なく','ない','なけれ','ず','ぬ','ん','ね']:
 					if m[1][0] in ['動詞']:
 						self.sentence[i-1] = self.change_katsuyo(self.sentence[i-1], '未然形')
+					if m[1][3] in ['形容詞・イ段']:
+						self.sentence[i-1] = self.sentence[i-1][:-1] + 'く'
+						self.sentence[i] = 'なかっ'
 				# ないチェック
 				if '特殊・ナイ' in m and '未然形' in m[1][4]:
 					m = self.reset_m()
@@ -300,6 +297,15 @@ class Changer():
 					self.sentence[i-1] = m[1][5]
 				elif m[1][0] in ['動詞']:
 					self.sentence[i-1] = self.change_katsuyo(self.sentence[i-1], '連用形')
+				
+				if m[1][0] in ['動詞'] and re.search(r'五段・(ワ|タ|ラ)行',m[1][3]):
+					self.sentence[i-1] = m[1][5][:-1] + 'っ'
+
+				if m[1][0] in ['動詞'] and re.search(r'五段・(ナ|バ|マ)行',m[1][3]):
+					self.sentence[i-1] = m[1][5][:-1] + 'ん'
+
+				if m[1][0] in ['動詞'] and re.search(r'イ音便',m[1][3]):
+					self.sentence[i-1] = m[1][5][:-1] + 'い'
 
 				if m[1][0] in ['動詞'] or m[1][4] in ['連用タ接続'] or \
 					not self.sentence[i-1] in ['ぬ','ん','う','まい']:
@@ -381,7 +387,6 @@ class Changer():
 			'''
 			です・ますの修正
 			'''
-
 			if m[0][3] in ['特殊・デス','特殊・マス'] and m[1][0]:
 				# ますチェック
 				if self.sentence[i] in ['ませ','ましょ','まし','ます','ますれ']:
@@ -420,7 +425,6 @@ class Changer():
 						if self.sentence[i] in ['でし']: self.sentence[i] = 'まし'
 						if self.sentence[i] in ['です']: self.sentence[i] = 'ます'
 
-						
 			'''
 			まいの修正
 			'''
@@ -460,15 +464,14 @@ class Changer():
 		temp1 = owakati.parse(text).split()
 		temp2 = bunpou.parse(text).split(',')
 		sets = list(zip(temp1,temp2[1:-1]))
-		
 
 if __name__ == '__main__':
 	changer = Changer()
-	'''
+
 	with open(G.path+'dataset/日本語例文.txt','r') as f:
 		for line in f:
 			print('■ '+line)
 			print(changer.standard(line))
 			print('------------------------------')
-	'''
-	print(changer.standard(input('入力：')))
+	
+	#print(changer.standard(input('入力：')))
